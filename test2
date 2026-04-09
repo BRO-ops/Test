@@ -1,0 +1,47 @@
+#!/usr/bin/bash
+
+set -e
+
+cd /var/www
+
+echo "Téléchargement..."
+sudo wget https://fr.wordpress.org/wordpress-6.9.4-fr_FR.tar.gz
+
+echo "Installation PHP..."
+sudo apt update
+sudo apt install php8.4 -y
+
+echo "Decompression..."
+sudo tar -xzf wordpress-6.9.4-fr_FR.tar.gz
+
+echo "Création du vhost..."
+
+sudo tee /etc/apache2/sites-available/wordpress.conf > /dev/null <<EOF
+<VirtualHost *:80>
+
+        ServerName wordpress.lan
+        DocumentRoot /var/www/wordpress
+
+</VirtualHost>
+EOF
+
+echo "Activation Apache..."
+sudo a2ensite wordpress.conf
+sudo a2enmod rewrite
+sudo systemctl reload apache2
+
+echo "Installation MariaDB..."
+sudo apt install mariadb-server -y
+
+echo "Configuration DB..."
+sudo mysql -e "
+CREATE DATABASE IF NOT EXISTS wordpress;
+CREATE USER IF NOT EXISTS 'wordpress'@'localhost' IDENTIFIED BY 'secret';
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
+FLUSH PRIVILEGES;
+"
+
+echo "Permissions..."
+sudo chown -R www-data:www-data /var/www/wordpress
+
+echo "Terminé"
