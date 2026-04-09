@@ -1,29 +1,40 @@
 #!/usr/bin/bash
 
+set -e
+
 WP_URL="https://fr.wordpress.org/wordpress-6.9.4-fr_FR.tar.gz"
 
-set -e
+DBNAME=$1
+DBUSER=$2
+DBPASS=$3
+SERVERNAME=$4
 
 cd /var/www
 
 echo "Téléchargement..."
 sudo wget -P /tmp $WP_URL
 
+echo "Extraction..."
+sudo tar -xzf /tmp/wordpress-6.9.4-fr_FR.tar.gz -C /var/www
+
+echo "Config wp-config..."
+WPCONFIG="/var/www/wordpress/wp-config.php"
+sudo cp /var/www/wordpress/wp-config-sample.php $WPCONFIG
+
+sudo sed -i "s/database_name_here/$DBNAME/" "$WPCONFIG"
+sudo sed -i "s/username_here/$DBUSER/" "$WPCONFIG"
+sudo sed -i "s/password_here/$DBPASS/" "$WPCONFIG"
+
 echo "Installation PHP..."
 sudo apt update
-sudo apt install php8.4 -y
-sudo apt install php-mysql -y
+sudo apt install php8.4 php-mysql -y
 
-echo "Decompression..."
-sudo tar -xzf /tmp/wordpress-6.9.4-fr_FR.tar.gz
-
-echo "Création du vhost..."
-
+echo "Vhost Apache..."
 sudo tee /etc/apache2/sites-available/wordpress.conf > /dev/null <<EOF
 <VirtualHost *:80>
 
-        ServerName wordpress.lan
-        DocumentRoot /var/www/wordpress
+    ServerName ${SERVERNAME}
+    DocumentRoot /var/www/wordpress
 
 </VirtualHost>
 EOF
@@ -33,14 +44,13 @@ sudo a2ensite wordpress.conf
 sudo a2enmod rewrite
 sudo systemctl reload apache2
 
-echo "Installation MariaDB..."
+echo "MariaDB..."
 sudo apt install mariadb-server -y
 
-echo "Configuration DB..."
 sudo mysql -e "
-CREATE DATABASE IF NOT EXISTS wordpress;
-CREATE USER IF NOT EXISTS 'wordpress'@'localhost' IDENTIFIED BY 'secret';
-GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
+CREATE DATABASE IF NOT EXISTS ${DBNAME};
+CREATE USER IF NOT EXISTS '${DBUSER}'@'localhost' IDENTIFIED BY '${DBPASS}';
+GRANT ALL PRIVILEGES ON ${DBNAME}.* TO '${DBUSER}'@'localhost';
 FLUSH PRIVILEGES;
 "
 
