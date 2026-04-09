@@ -10,6 +10,7 @@ sudo wget https://fr.wordpress.org/wordpress-6.9.4-fr_FR.tar.gz
 echo "Installation PHP..."
 sudo apt update
 sudo apt install php8.4 -y
+sudo apt install php-mysql
 
 echo "Decompression..."
 sudo tar -xzf wordpress-6.9.4-fr_FR.tar.gz
