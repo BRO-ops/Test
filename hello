@@ -4,5 +4,5 @@ cat << EOF > /tmp/test/
 hello wrld
 EOF
 
-sed -i 's/nom_utilisateur/wordpress/'  sed_test
-sed -i 's/mot_de_passe/secret/'  sed_test
+sed -i 's/nom_utilisateur/wordpress/'  test
+sed -i 's/mot_de_passe/secret/'  test
