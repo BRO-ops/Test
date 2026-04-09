@@ -30,7 +30,7 @@ sudo apt update
 sudo apt install php8.4 php-mysql -y
 
 echo "Vhost Apache..."
-sudo tee /etc/apache2/sites-available/wordpress.conf > /dev/null <<EOF
+sudo tee /etc/apache2/sites-available/$DBUSER.conf > /dev/null <<EOF
 <VirtualHost *:80>
 
     ServerName ${SERVERNAME}
@@ -40,7 +40,7 @@ sudo tee /etc/apache2/sites-available/wordpress.conf > /dev/null <<EOF
 EOF
 
 echo "Activation Apache..."
-sudo a2ensite wordpress.conf
+sudo a2ensite $DBUSER.conf
 sudo a2enmod rewrite
 sudo systemctl reload apache2
 
